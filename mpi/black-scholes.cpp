@@ -39,7 +39,6 @@ int main(int argc, char* argv[]) {
 
 	struct timeval start, end;
 
-	gettimeofday(&start,NULL);	
 
 
 	MPI_Init (&argc, &argv);	
@@ -56,6 +55,8 @@ int main(int argc, char* argv[]) {
 	
 	
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+	if(myrank==0)
+		gettimeofday(&start,NULL);	
 	MPI_Comm_size(MPI_COMM_WORLD, &p);
 
 	
@@ -126,11 +127,12 @@ int main(int argc, char* argv[]) {
 	
 	
 	MPI_Finalize();
-
+	if(myrank==0)
+	{
 	gettimeofday(&end,NULL);
 	
 	printf("tempo total de execução: %lf segundos \n \n",(end.tv_sec-start.tv_sec) + (end.tv_usec-start.tv_usec) / 1000000.0);
-	
+	}
 
 	return 0;
 }
