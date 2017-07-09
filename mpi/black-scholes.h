@@ -91,7 +91,7 @@ void MonteCarlo(float *h_CallResult, float *h_CallConfidence, float *S,
 
 
 
-	for (int opt = myrank*OPT_N/p; opt < (myrank+1)*(OPT_N/p); opt++) {
+	for (int opt = myrank*(OPT_N/p); opt < (myrank+1)*(OPT_N/p); opt++) {
 		float VBySqrtT = VOLATILITY * sqrt(T[opt]);
 		float MuByT = (RISKFREE - 0.5 * VOLATILITY * VOLATILITY) * T[opt];
 		float Sval = S[opt];

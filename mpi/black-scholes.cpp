@@ -35,7 +35,7 @@ inline float RandFloat(float low, float high) {
 
 int main(int argc, char* argv[]) { 
 	FPARRAY CallResultParallel, CallConfidence, StockPrice, OptionStrike,
-			OptionYears;
+			OptionYears,res,subres;
 	
 	MPI_Init (&argc, &argv);	
 
@@ -64,6 +64,10 @@ int main(int argc, char* argv[]) {
 
 	mem_size = sizeof(float) * OPT_N;
 
+	res.SPData = (float *) malloc(mem_size);
+	int subTam =(OPT_N/p);
+	subres.SPData = (float *) malloc(mem_size/p);
+
 	CallResultParallel.SPData = (float *) malloc(mem_size);
 	CallConfidence.SPData = (float *) malloc(mem_size);
 	StockPrice.SPData = (float *) malloc(mem_size);
@@ -86,28 +90,22 @@ int main(int argc, char* argv[]) {
 	MPI_Bcast (StockPrice.SPData, OPT_N, MPI_FLOAT, 0, MPI_COMM_WORLD);
 	MPI_Bcast (OptionStrike.SPData, OPT_N, MPI_FLOAT, 0, MPI_COMM_WORLD);
 	MPI_Bcast (OptionYears.SPData, OPT_N, MPI_FLOAT, 0, MPI_COMM_WORLD);
-	
 
-	
-	
-		for (i = 0; i < OPT_N; i++){
-			printf( "%d - [%f] \n", myrank, CallResultParallel.SPData[i]);
-			printf( "%d - [%f] \n", myrank, CallConfidence.SPData[i]);
-			printf( "%d - [%f] \n", myrank, StockPrice.SPData[i]);
-			printf( "%d - [%f] \n", myrank, OptionStrike.SPData[i]);
-			printf( "%d - [%f] \n", myrank, OptionYears.SPData[i]);		
-		}
 
-		
-		
-	
 	MonteCarlo(CallResultParallel.SPData, CallConfidence.SPData,
 			StockPrice.SPData, OptionStrike.SPData, OptionYears.SPData, OPT_N, myrank, p);
-
-	// results in CallResultParallel.SPData[i]
-	//for (i = 0; i < OPT_N; i++)
-		//printf("%5.2f\n", CallResultParallel.SPData[i]);
-
+	int aux=0;
+	for (int opt = myrank*(OPT_N/p); opt < (myrank+1)*(OPT_N/p); opt++) {
+		subres.SPData[aux++]=CallResultParallel.SPData[opt];
+	}
+	MPI_Gather(subres.SPData,(OPT_N/p), MPI_FLOAT,CallResultParallel.SPData,(OPT_N/p), MPI_FLOAT, 0, MPI_COMM_WORLD);
+	if(myrank==0)
+	{
+		for (i = 0; i < OPT_N; i++){
+			printf( "%d - [%f] \n", myrank, CallResultParallel.SPData[i]);	
+		}
+	}
+	
 	free(CallResultParallel.SPData);
 	free(CallConfidence.SPData);
 	free(StockPrice.SPData);
