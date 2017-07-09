@@ -75,8 +75,8 @@ int main(int argc, char* argv[]) {
 	mem_size = sizeof(float) * OPT_N;
 
 	res.SPData = (float *) malloc(mem_size);
-	int subTam =(OPT_N/p);
-	subres.SPData = (float *) malloc(mem_size/p);
+	int subTam =(OPT_N/p);// esse é o tamanho da entrada de cada processo
+	subres.SPData = (float *) malloc(mem_size/p);// vetor para servir de parametro para gather
 
 	CallResultParallel.SPData = (float *) malloc(mem_size);
 	CallConfidence.SPData = (float *) malloc(mem_size);
@@ -104,6 +104,7 @@ int main(int argc, char* argv[]) {
 
 	MonteCarlo(CallResultParallel.SPData, CallConfidence.SPData,
 			StockPrice.SPData, OptionStrike.SPData, OptionYears.SPData, OPT_N, myrank, p);
+	// esse for coloca em um vetor apenas a parte calculada para servir de parametro para o gather
 	int aux=0;
 	for (int opt = myrank*(OPT_N/p); opt < (myrank+1)*(OPT_N/p); opt++) {
 		subres.SPData[aux++]=CallResultParallel.SPData[opt];
